@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <h:head>
+        <title>Pulse</title>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        
+        <!-- Bootstrap CSS 23.1 KB -->
+        <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous" />
+        
+        <!-- Knokout JS 20.7 KB -->
+        <script src="//ajax.aspnetcdn.com/ajax/knockout/knockout-3.3.0.js"></script>
+
+        <script>
+            var Building = function (id, gas, electric, water) {
+                
+                this.id = ko.observable(id);
+                this.gas = ko.observable(gas);
+                this.electric = ko.observable(electric);
+                this.water = ko.observable(water);
+                
+                this.cssstyle = ko.pureComputed(function () {
+                    if (this.gas() >= 25 || this.electric() >= 25 || this.water() >= 25) {
+                        return "panel panel-danger";
+                    }
+                    return "panel panel-default";
+                }, this);
+                
+            };
+        </script>
+
+        <script>
+
+            var buildingSocket = new WebSocket("ws://localhost:8080/pulse/building-socket");
+
+            buildingSocket.onmessage = function (evt) {
+                var building = JSON.parse(evt.data);
+                var target = window['$' + building.id];
+                target.gas(building.gas);
+                target.electric(building.electric);
+                target.water(building.water);
+            };
+            
+            buildingSocket.onclose = function (evt) {
+                alert("Socket closed: code " + evt.code);
+            }
+
+        </script>
+    </h:head>
+    <h:body>
+        <nav class="navbar navbar-inverse navbar-top">
+            <div class="container">
+                <div class="navbar-header">
+                    <a class="navbar-brand" href="/">
+                        Pulse
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container">
+            <div class="row">
+                <ui:repeat value="#{homepage.listBuildings()}" var="building">
+                    <div class="col-md-4">
+                        <div class="panel panel-default" id="#{building.id}" data-bind="css: cssstyle">
+                            <div class="panel-heading">
+                                #{building.name}
+                            </div>
+                            <ul class="list-group">
+                                <li class="list-group-item">Gas <span data-bind="text: gas">#{building.gas}</span></li>
+                                <li class="list-group-item">Electric <span data-bind="text: electric">#{building.electric}</span></li>
+                                <li class="list-group-item">Water <span data-bind="text: water">#{building.water}</span></li>                              
+                            </ul>
+                        </div>
+                    </div>
+                    <script>
+                        var $#{building.id} = new Building(#{building.id}, #{building.gas}, #{building.electric}, #{building.water});
+                        ko.applyBindings($#{building.id}, document.getElementById('#{building.id}'));
+                    </script>
+                </ui:repeat>
+            </div>
+        </div>
+    </h:body>
+</html>
+
