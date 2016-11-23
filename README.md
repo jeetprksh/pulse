@@ -7,4 +7,4 @@ The Java EE APIs are
 * JSF
 * EJBs
 
-The demonstration updates data on 3 of 9 random HTML panels every second. Knockout JS binds the data sent down the Web Socket to the boxes with very little JavaScript. The Java on the server is also very lightweight too.
+In this demonstration a Java EE 7 web server sends data to 3 of 9 random HTML panels every second. Knockout JS binds the data sent down the Web Socket to the boxes with very little JavaScript. The Java on the server is also very lightweight too.
